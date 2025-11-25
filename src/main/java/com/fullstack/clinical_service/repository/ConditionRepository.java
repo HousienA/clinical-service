@@ -1,12 +1,12 @@
 package com.fullstack.clinical_service.repository;
 
-import com.fullstack.clinical_service.entity.Encounter;
+import com.fullstack.clinical_service.entity.Condition;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
 @Repository
-public interface EncounterRepository extends JpaRepository<Encounter, Long> {
-    List<Encounter> findByPatientId(Long patientId);
+public interface ConditionRepository extends JpaRepository<Condition, Long> {
+    List<Condition> findByPatientId(Long patientId);
 }

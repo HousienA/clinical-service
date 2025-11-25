@@ -2,49 +2,51 @@ package com.fullstack.clinical_service.service;
 
 import com.fullstack.clinical_service.entity.Organization;
 import com.fullstack.clinical_service.repository.OrganizationRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.fullstack.clinical_service.exception.NotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import java.util.List;
-import java.util.Optional;
 
+import java.util.List;
 
 @Service
 @Transactional
 public class OrganizationService {
 
-    @Autowired
-    private OrganizationRepository organizationRepository;
+    private final OrganizationRepository organizationRepository;
+
+    public OrganizationService(OrganizationRepository organizationRepository) {
+        this.organizationRepository = organizationRepository;
+    }
 
     public List<Organization> getAllOrganizations() {
         return organizationRepository.findAll();
     }
 
-    public Optional<Organization> getOrganizationById(Long id) {
-        return organizationRepository.findById(id);
+    public Organization getOrganizationById(Long id) {
+        return organizationRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Organization not found"));
+    }
+
+    public List<Organization> search(String query) {
+        if (query != null && !query.isBlank()) {
+            return organizationRepository.findByNameContainingIgnoreCase(query);
+        }
+        return getAllOrganizations();
     }
 
     public Organization createOrganization(Organization organization) {
         return organizationRepository.save(organization);
     }
 
-    public Organization updateOrganization(Long id, Organization updatedOrganization) {
-        Organization organization = organizationRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Organization not found"));
+    public Organization updateOrganization(Long id, Organization updated) {
+        Organization existing = organizationRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Organization not found"));
 
-        organization.setName(updatedOrganization.getName());
-        organization.setAddress(updatedOrganization.getAddress());
-        organization.setPhone(updatedOrganization.getPhone());
-        organization.setEmail(updatedOrganization.getEmail());
-        organization.setOrganizationType(updatedOrganization.getOrganizationType());
-
-        return organizationRepository.save(organization);
+        existing.setName(updated.getName());
+        return organizationRepository.save(existing);
     }
 
     public void deleteOrganization(Long id) {
-        if (!organizationRepository.existsById(id)) {
-            throw new RuntimeException("Organization not found");
-        }
         organizationRepository.deleteById(id);
     }
 }
