@@ -59,4 +59,30 @@ public class ClinicalDataController {
                                                        @RequestParam(required = false) String q) {
         return ResponseEntity.ok(locationService.search(orgId, q));
     }
+
+
+    @GetMapping("/patients")
+    public ResponseEntity<List<Patient>> getAllPatients() {
+        return ResponseEntity.ok(patientService.getAllPatients());
+    }
+
+    @GetMapping("/patients/{id}")
+    public ResponseEntity<Patient> getPatientById(@PathVariable Long id) {
+        return patientService.getPatientById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @PostMapping("/patients")
+    public ResponseEntity<String> createPatient(@RequestBody Patient patient) {
+        patientService.createPatient(patient); // OBS: Din service returnerar void eller Result
+        return ResponseEntity.ok("Patient created");
+    }
+
+    @PutMapping("/patients/{id}")
+    public ResponseEntity<String> updatePatient(@PathVariable Long id, @RequestBody Patient patient) {
+        patientService.updatePatient(id, patient);
+        return ResponseEntity.ok("Patient updated");
+    }
+
 }
