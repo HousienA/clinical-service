@@ -3,6 +3,7 @@ package com.fullstack.clinical_service.controller;
 import com.fullstack.clinical_service.entity.*;
 import com.fullstack.clinical_service.service.*;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -61,10 +62,12 @@ public class ClinicalDataController {
     }
 
 
+
     @GetMapping("/patients")
     public ResponseEntity<List<Patient>> getAllPatients() {
         return ResponseEntity.ok(patientService.getAllPatients());
     }
+
 
     @GetMapping("/patients/{id}")
     public ResponseEntity<Patient> getPatientById(@PathVariable Long id) {
@@ -73,12 +76,14 @@ public class ClinicalDataController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/patients")
     public ResponseEntity<String> createPatient(@RequestBody Patient patient) {
         patientService.createPatient(patient); // OBS: Din service returnerar void eller Result
         return ResponseEntity.ok("Patient created");
     }
 
+    @PreAuthorize("hasRole('DOCTOR')")
     @PutMapping("/patients/{id}")
     public ResponseEntity<String> updatePatient(@PathVariable Long id, @RequestBody Patient patient) {
         patientService.updatePatient(id, patient);
