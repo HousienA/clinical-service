@@ -29,6 +29,10 @@ public class PractitionerService {
         return practitionerRepository.save(practitioner);
     }
 
+    public Optional<Practitioner> getByAuthId(String authId) {
+        return practitionerRepository.findByAuthId(authId);
+    }
+
     public void deletePractitioner(Long id) {
         practitionerRepository.deleteById(id);
     }

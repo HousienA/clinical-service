@@ -68,6 +68,10 @@ public class PatientService {
         return Result.SUCCESS;
     }
 
+    public Optional<Patient> getByAuthId(String authId) {
+        return patientRepository.findByAuthId(authId);
+    }
+
     public Result deletePatient(Long id) {
         if (!patientRepository.existsById(id)) {
             throw new NotFoundException("Patient not found");
