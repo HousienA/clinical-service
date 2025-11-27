@@ -8,5 +8,5 @@ import java.util.List;
 
 @Repository
 public interface ConditionRepository extends JpaRepository<Condition, Long> {
-    List<Condition> findByPatientId(Long patientId);
+    List<Condition> findByPatient_Id(Long patientId);
 }

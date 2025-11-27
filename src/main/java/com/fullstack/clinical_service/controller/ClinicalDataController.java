@@ -20,16 +20,25 @@ public class ClinicalDataController {
     private final PractitionerService practitionerService;
     private final EncounterService encounterService;
     private final LocationService locationService;
+    private final ConditionService conditionService;
+    private final ObservationService observationService;
+    private final OrganizationService organizationService;
 
     public ClinicalDataController(
             PatientService patientService,
             PractitionerService practitionerService,
             EncounterService encounterService,
-            LocationService locationService) {
+            LocationService locationService,
+            ConditionService conditionService,
+            ObservationService observationService,
+            OrganizationService organizationService) {
         this.patientService = patientService;
         this.practitionerService = practitionerService;
         this.encounterService = encounterService;
+        this.organizationService = organizationService;
         this.locationService = locationService;
+        this.conditionService = conditionService;
+        this.observationService = observationService;
     }
 
     // ==================== ONBOARDING ENDPOINTS ====================
@@ -159,6 +168,13 @@ public class ClinicalDataController {
         return ResponseEntity.ok(encounterService.getAllEncounters());
     }
 
+    @GetMapping("/encounters/{id}")
+    public ResponseEntity<Encounter> getEncounterById(@PathVariable Long id) {
+        return encounterService.getEncounterById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
     @GetMapping("/encounters/patient/{id}")
     public ResponseEntity<List<Encounter>> getEncountersByPatient(@PathVariable Long id) {
         return ResponseEntity.ok(encounterService.getEncountersByPatientId(id));
@@ -169,15 +185,37 @@ public class ClinicalDataController {
         return ResponseEntity.ok(encounterService.createEncounter(encounter));
     }
 
-    // ==================== LOCATIONS ====================
 
-    @GetMapping("/locations")
-    public ResponseEntity<List<Location>> getLocations(
-            @RequestParam(required = false) Long orgId,
-            @RequestParam(required = false) String q) {
-        return ResponseEntity.ok(locationService.search(orgId, q));
+    // ==================== ORGANIZATIONS ====================
+    @GetMapping("/organizations")
+    public ResponseEntity<List<Organization>> getOrganizations(@RequestParam(required = false) String q) {
+        if (q != null && !q.isBlank()) {
+            return ResponseEntity.ok(organizationService.search(q));
+        }
+        return ResponseEntity.ok(organizationService.getAllOrganizations());
     }
 
+    @GetMapping("/organizations/{id}")
+    public ResponseEntity<Organization> getOrganizationById(@PathVariable Long id) {
+        return ResponseEntity.ok(organizationService.getOrganizationById(id));
+    }
+
+    // ==================== LOCATIONS ====================
+    @GetMapping("/locations")
+    public ResponseEntity<List<Location>> getLocations(
+            @RequestParam(required = false, name = "organizationId") Long organizationId,
+            @RequestParam(required = false) String q) {
+
+        // Debug-utskrift (valfritt, men bra för att se om backend tar emot id:t)
+        System.out.println("Fetching locations for organizationId: " + organizationId);
+
+        return ResponseEntity.ok(locationService.search(organizationId, q));
+    }
+
+    @GetMapping("/locations/{id}")
+    public ResponseEntity<Location> getLocationById(@PathVariable Long id) {
+        return ResponseEntity.ok(locationService.getLocationById(id)); // Observera: Service kastar exception om ej hittad, vilket hanteras globalt
+    }
     // ==================== PATIENTS ====================
 
     @GetMapping("/patients")
@@ -202,5 +240,75 @@ public class ClinicalDataController {
     public ResponseEntity<String> updatePatient(@PathVariable Long id, @RequestBody Patient patient) {
         patientService.updatePatient(id, patient);
         return ResponseEntity.ok("Patient updated");
+    }
+
+
+
+    // ==================== CONDITIONS ====================
+    @GetMapping("/conditions")
+    public ResponseEntity<List<Condition>> getAllConditions() {
+        return ResponseEntity.ok(conditionService.getAllConditions());
+    }
+
+    @GetMapping("/conditions/{id}")
+    public ResponseEntity<Condition> getConditionById(@PathVariable Long id) {
+        return conditionService.getConditionById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/conditions/patient/{patientId}")
+    public ResponseEntity<List<Condition>> getConditionsByPatient(@PathVariable Long patientId) {
+        return ResponseEntity.ok(conditionService.getConditionsByPatientId(patientId));
+    }
+
+    @PostMapping("/conditions")
+    public ResponseEntity<Condition> createCondition(@RequestBody Condition condition) {
+        return ResponseEntity.ok(conditionService.createCondition(condition));
+    }
+
+    @PutMapping("/conditions/{id}")
+    public ResponseEntity<Condition> updateCondition(@PathVariable Long id, @RequestBody Condition condition) {
+        return ResponseEntity.ok(conditionService.updateCondition(id, condition));
+    }
+
+    @DeleteMapping("/conditions/{id}")
+    public ResponseEntity<Void> deleteCondition(@PathVariable Long id) {
+        conditionService.deleteCondition(id);
+        return ResponseEntity.ok().build();
+    }
+
+    // ==================== OBSERVATIONS ====================
+    @GetMapping("/observations")
+    public ResponseEntity<List<Observation>> getAllObservations() {
+        return ResponseEntity.ok(observationService.getAllObservations());
+    }
+
+    @GetMapping("/observations/{id}")
+    public ResponseEntity<Observation> getObservationById(@PathVariable Long id) {
+        return observationService.getObservationById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/observations/encounter/{encounterId}")
+    public ResponseEntity<List<Observation>> getObservationsByEncounter(@PathVariable Long encounterId) {
+        return ResponseEntity.ok(observationService.getObservationsByEncounterId(encounterId));
+    }
+
+    @PostMapping("/observations")
+    public ResponseEntity<Observation> createObservation(@RequestBody Observation observation) {
+        return ResponseEntity.ok(observationService.createObservation(observation));
+    }
+
+    @PutMapping("/observations/{id}")
+    public ResponseEntity<Observation> updateObservation(@PathVariable Long id, @RequestBody Observation observation) {
+        return ResponseEntity.ok(observationService.updateObservation(id, observation));
+    }
+
+    @DeleteMapping("/observations/{id}")
+    public ResponseEntity<Void> deleteObservation(@PathVariable Long id) {
+        observationService.deleteObservation(id);
+        return ResponseEntity.ok().build();
     }
 }

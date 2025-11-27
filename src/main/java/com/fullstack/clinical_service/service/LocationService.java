@@ -33,4 +33,8 @@ public class LocationService {
     public Location createLocation(Location location) {
         return locationRepository.save(location);
     }
+
+    public Location getLocationById(Long id) {
+        return locationRepository.findById(id).orElse(null);
+    }
 }

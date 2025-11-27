@@ -8,5 +8,5 @@ import java.util.List;
 
 @Repository
 public interface ObservationRepository extends JpaRepository<Observation, Long> {
-    List<Observation> findByEncounterId(Long encounterId);
+    List<Observation> findByEncounter_Id(Long encounterId);
 }

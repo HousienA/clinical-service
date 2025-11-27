@@ -8,5 +8,5 @@ import java.util.List;
 
 @Repository
 public interface EncounterRepository extends JpaRepository<Encounter, Long> {
-    List<Encounter> findByPatientId(Long patientId);
+    List<Encounter> findByPatient_Id(Long patientId);
 }
