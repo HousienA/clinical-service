@@ -80,14 +80,5 @@ public class PatientService {
         return Result.DELETED;
     }
 
-    // Search metoderna behöver inte ändras mycket mer än att ta bort DTO conversion
-    public List<Patient> searchByFields(String pnr, String name) {
-        if (pnr != null && !pnr.isBlank()) {
-            return patientRepository.findByPersonalNumberContainingIgnoreCase(pnr);
-        }
-        if (name != null && !name.isBlank()) {
-            return patientRepository.findByFullNameContainingIgnoreCase(name);
-        }
-        return getAllPatients();
-    }
+
 }
