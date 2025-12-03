@@ -59,6 +59,13 @@ public class PatientService {
         existing.setEmail(updatedData.getEmail());
         existing.setPhone(updatedData.getPhone());
 
+        // Uppdatera Primary Practitioner
+        if (updatedData.getPrimaryPractitioner() != null && updatedData.getPrimaryPractitioner().getId() != null) {
+            Practitioner p = practitionerRepository.findById(updatedData.getPrimaryPractitioner().getId())
+                    .orElseThrow(() -> new ApiException("Practitioner not found"));
+            existing.setPrimaryPractitioner(p);
+        }
+
         // Uppdatera authId om det skickas med
         if (updatedData.getAuthId() != null) {
             existing.setAuthId(updatedData.getAuthId());
@@ -72,6 +79,10 @@ public class PatientService {
         return patientRepository.findByAuthId(authId);
     }
 
+    public List<Patient> getPatientsByPractitionerId(Long practitionerId) {
+        return patientRepository.findByPrimaryPractitioner_Id(practitionerId);
+    }
+
     public Result deletePatient(Long id) {
         if (!patientRepository.existsById(id)) {
             throw new NotFoundException("Patient not found");
@@ -79,6 +90,5 @@ public class PatientService {
         patientRepository.deleteById(id);
         return Result.DELETED;
     }
-
 
 }

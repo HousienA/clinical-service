@@ -13,5 +13,5 @@ public interface PatientRepository extends JpaRepository<Patient, Long> {
 
     Optional<Patient> findByAuthId(String authId);
 
-
+    List<Patient> findByPrimaryPractitioner_Id(Long practitionerId);
 }

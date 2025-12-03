@@ -49,7 +49,7 @@ public class ClinicalDataController {
      */
     @GetMapping("/profile/exists")
     public ResponseEntity<?> checkProfileExists(@AuthenticationPrincipal Jwt jwt) {
-        String keycloakUserId = jwt.getSubject();  // Get Keycloak user ID from JWT
+        String keycloakUserId = jwt.getSubject(); // Get Keycloak user ID from JWT
 
         // Check if user has a Patient profile
         Optional<Patient> patient = patientService.getByAuthId(keycloakUserId);
@@ -57,8 +57,7 @@ public class ClinicalDataController {
             return ResponseEntity.ok(Map.of(
                     "exists", true,
                     "profileType", "PATIENT",
-                    "profile", patient.get()
-            ));
+                    "profile", patient.get()));
         }
 
         // Check if user has a Practitioner profile
@@ -67,8 +66,7 @@ public class ClinicalDataController {
             return ResponseEntity.ok(Map.of(
                     "exists", true,
                     "profileType", "PRACTITIONER",
-                    "profile", practitioner.get()
-            ));
+                    "profile", practitioner.get()));
         }
 
         // No profile found - user needs onboarding
@@ -76,8 +74,7 @@ public class ClinicalDataController {
                 "exists", false,
                 "keycloakUserId", keycloakUserId,
                 "email", jwt.getClaimAsString("email"),
-                "username", jwt.getClaimAsString("preferred_username")
-        ));
+                "username", jwt.getClaimAsString("preferred_username")));
     }
 
     /**
@@ -112,8 +109,7 @@ public class ClinicalDataController {
         return ResponseEntity.ok(Map.of(
                 "success", true,
                 "message", "Patient profile created successfully",
-                "profile", patientData
-        ));
+                "profile", patientData));
     }
 
     /**
@@ -145,15 +141,34 @@ public class ClinicalDataController {
         return ResponseEntity.ok(Map.of(
                 "success", true,
                 "message", "Practitioner profile created successfully",
-                "profile", practitionerData
-        ));
+                "profile", practitionerData));
     }
 
     // ==================== PRACTITIONERS ====================
 
     @GetMapping("/practitioners")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('DOCTOR') or hasRole('STAFF')")
     public ResponseEntity<List<Practitioner>> getAllPractitioners() {
         return ResponseEntity.ok(practitionerService.getAllPractitioners());
+    }
+
+    @GetMapping("/practitioners/{id}/patients")
+    @PreAuthorize("hasRole('DOCTOR') or hasRole('STAFF') or hasRole('ADMIN')")
+    public ResponseEntity<List<Patient>> getPatientsByPractitioner(@PathVariable Long id) {
+        return ResponseEntity.ok(patientService.getPatientsByPractitionerId(id));
+    }
+
+    @GetMapping("/practitioners/{id}/encounters")
+    @PreAuthorize("hasRole('DOCTOR') or hasRole('STAFF') or hasRole('ADMIN')")
+    public ResponseEntity<List<Encounter>> getEncountersByPractitioner(
+            @PathVariable Long id,
+            @RequestParam(required = false) String date) {
+
+        if (date != null) {
+            return ResponseEntity
+                    .ok(encounterService.getEncountersByPractitionerIdAndDate(id, java.time.LocalDate.parse(date)));
+        }
+        return ResponseEntity.ok(encounterService.getEncountersByPractitionerId(id));
     }
 
     @PostMapping("/practitioners")
@@ -185,7 +200,6 @@ public class ClinicalDataController {
         return ResponseEntity.ok(encounterService.createEncounter(encounter));
     }
 
-
     // ==================== ORGANIZATIONS ====================
     @GetMapping("/organizations")
     public ResponseEntity<List<Organization>> getOrganizations(@RequestParam(required = false) String q) {
@@ -214,11 +228,13 @@ public class ClinicalDataController {
 
     @GetMapping("/locations/{id}")
     public ResponseEntity<Location> getLocationById(@PathVariable Long id) {
-        return ResponseEntity.ok(locationService.getLocationById(id)); // Observera: Service kastar exception om ej hittad, vilket hanteras globalt
+        return ResponseEntity.ok(locationService.getLocationById(id)); // Observera: Service kastar exception om ej
+                                                                       // hittad, vilket hanteras globalt
     }
     // ==================== PATIENTS ====================
 
     @GetMapping("/patients")
+    @PreAuthorize("hasRole('DOCTOR') or hasRole('STAFF') or hasRole('ADMIN')")
     public ResponseEntity<List<Patient>> getAllPatients() {
         return ResponseEntity.ok(patientService.getAllPatients());
     }
@@ -237,12 +253,10 @@ public class ClinicalDataController {
     }
 
     @PutMapping("/patients/{id}")
-    public ResponseEntity<String> updatePatient(@PathVariable Long id, @RequestBody Patient patient) {
+    public ResponseEntity<Map<String, String>> updatePatient(@PathVariable Long id, @RequestBody Patient patient) {
         patientService.updatePatient(id, patient);
-        return ResponseEntity.ok("Patient updated");
+        return ResponseEntity.ok(Map.of("message", "Patient updated"));
     }
-
-
 
     // ==================== CONDITIONS ====================
     @GetMapping("/conditions")

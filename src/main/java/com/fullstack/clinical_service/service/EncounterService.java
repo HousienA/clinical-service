@@ -47,6 +47,16 @@ public class EncounterService {
         return encounterRepository.findByPatient_Id(patientId);
     }
 
+    public List<Encounter> getEncountersByPractitionerId(Long practitionerId) {
+        return encounterRepository.findByPractitioner_Id(practitionerId);
+    }
+
+    public List<Encounter> getEncountersByPractitionerIdAndDate(Long practitionerId, java.time.LocalDate date) {
+        java.time.LocalDateTime start = date.atStartOfDay();
+        java.time.LocalDateTime end = date.atTime(java.time.LocalTime.MAX);
+        return encounterRepository.findByPractitioner_IdAndEncounterDateBetween(practitionerId, start, end);
+    }
+
     public Encounter createEncounter(Encounter encounter) {
         // 1. Koppla Patient
         if (encounter.getPatient() == null && encounter.getPatientId() != null) {
