@@ -147,7 +147,7 @@ public class ClinicalDataController {
     // ==================== PRACTITIONERS ====================
 
     @GetMapping("/practitioners")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('DOCTOR') or hasRole('STAFF')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('DOCTOR') or hasRole('STAFF') or hasRole('PATIENT')")
     public ResponseEntity<List<Practitioner>> getAllPractitioners() {
         return ResponseEntity.ok(practitionerService.getAllPractitioners());
     }
