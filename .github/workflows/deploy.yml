@@ -2,11 +2,10 @@ name: Build and Push Spring Boot App
 
 on:
   push:
-    branches: [ "master" ]
+    branches: [ "main" ]
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }} # This automatically gets "username/repo-name"
 
 jobs:
   build-and-push:
@@ -26,10 +25,13 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      # Lab requirement: Run Unit Tests
-      # If your tests require a running Database, this step might fail.
-      # If so, use 'mvn clean package -DskipTests' temporarily.
+      # 1. Convert repository name to lowercase
+      - name: Lowercase Registry Image Name
+        run: |
+          echo "IMAGE_NAME=${GITHUB_REPOSITORY,,}" >> ${GITHUB_ENV}
+
       - name: Build with Maven
+        # Runs tests (using your H2 config)
         run: mvn clean package
 
       - name: Log in to the Container registry
@@ -44,4 +46,5 @@ jobs:
         with:
           context: .
           push: true
+          # 2. UPDATED: Uses the lowercase variable we created
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
