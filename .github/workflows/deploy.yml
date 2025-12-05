@@ -3,7 +3,7 @@ name: Build and Push Spring Boot App
 on:
   push:
     branches: [ "master" ]
-
+ 
 env:
   REGISTRY: ghcr.io
 
